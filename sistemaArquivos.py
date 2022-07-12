@@ -74,10 +74,12 @@ def listagens(listaArquivos):
 
     opcaoEscolhida = printarOperacoes()
 
+    #abrir um arq/dir
     if(opcaoEscolhida == 0):
         printarLista(listaArquivos)
         numArquivo = input("Digite o número do arquivo que deseja abrir: ")
 
+        #numeros que não encaixam com os indices da lista
         if(numArquivo < 0 or numArquivo >= sizeof(listaArquivos)):
             print("Opção inválida")
             listagens(listaArquivos)
@@ -85,20 +87,25 @@ def listagens(listaArquivos):
         arquivoAberto = listaArquivos[numArquivo]
         setorInicio = arquivoAberto[4] * setoresPorCluster
 
+        #abre um diretorio
         if(arquivoAberto[2] == 'diretorio'):
             conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+1)*bytesPorSetor]
             printarConteudoDir(conteudo)
+        #abre um arquivo
         elif(arquivoAberto[2] == 'arquivo'):
             conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+arquivoAberto[5])*bytesPorSetor]   
             print(conteudo.decode("ASCII"))      
 
+    #exportar um arquivo do sistema de arquivos para fora
     elif(opcaoEscolhida == 1):
         exportarArquivo()
 
+    #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
         adicionarArquivo()
         #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
 
+    #formatar o disco
     elif(opcaoEscolhida == 3):
         formatar()
     else:
