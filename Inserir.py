@@ -18,7 +18,7 @@ def info_arquivo():
 
     return(tamanho_arquivo, nome_arquivo, extensao_arquivo, conteudo_arquivo)
 
-def inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, totalSetores):
+def inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir):
 
     arquivo = []
     arquivo = info_arquivo()
@@ -55,12 +55,13 @@ def inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster,
             proximo = proximo_cluster_livre
             arq.write(int.to_bytes(proximo, 4, "little"))  
 
+
         else:
             prim_cluster_livre_atual = proximo_cluster_livre
         
         #senao, quer dizer que acabou os clusters livres daquele bloco de clusters livres. Verificar
         # se a qtd_clusters_livres é a qtd total do arquivo, senao for, quer dizer que tem mais
-        # clusters livres a frente. Dessa forma, verifica o ponteiro pro proximo e ai atualiza a partir dele.  
+        # clusters livres a frente. Dessa forma, verifica o ponteiro pro proximo e ai atualiza a partir dele.   
 
         #atualizar BR
         arq.seek(9)

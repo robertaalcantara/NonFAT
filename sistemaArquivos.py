@@ -6,7 +6,7 @@ import Inserir
 operacoes = ['Abrir', 'Exportar', 'Adicionar', 'Formatar']
 
 def inicio():
-    global bytesPorSetor, setoresPorCluster, dados, rootDir, setoresBootRecord, numSetoresRootDir, totalSetores, arq, primeiroClusterLivre
+    global bytesPorSetor, setoresPorCluster, dados, rootDir, setoresBootRecord, numSetoresRootDir, arq, primeiroClusterLivre
 
     nomeArquivo = input("Insira o caminho do arquivo que deseja abrir: \n")
 
@@ -108,7 +108,7 @@ def listagens(listaArquivos):
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
-        Inserir.inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, totalSetores)
+        Inserir.inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir)
         #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
 
     #formatar o disco
