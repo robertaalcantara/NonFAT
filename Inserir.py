@@ -37,8 +37,6 @@ def inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster,
     if(qtd_clusters_livres >= qtd_cluster_arquivo):
         arq.write(arquivo[3])
         arq.write(b'\x00'*(bytes_cluster - (arquivo[0])%bytes_cluster))
-        #verificar se ainda sobrou clusters livres a frente. Se sobrou, br aponta para esse cluster livre e 
-        # cluster livre aponta pro proximo cluster livre. Senao sobrou é simplesmente o br aponto pro proximo cluster livre
 
         clusters_livres = qtd_clusters_livres - qtd_cluster_arquivo
         if(clusters_livres > 0):
@@ -49,39 +47,40 @@ def inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster,
             prim_setor_livre_atual = setoresBootRecord + numSetoresRootDir + (prim_cluster_livre_atual*setoresPorCluster)
             arq.seek(bytesPorSetor*prim_setor_livre_atual)
 
-            #tamanho em clusters
+            #tamanho de clusters livres
             arq.write(int.to_bytes(clusters_livres, 4, "little"))
 
+            #ponteiro pro próximo
             proximo = proximo_cluster_livre
             arq.write(int.to_bytes(proximo, 4, "little"))  
-
-
         else:
             prim_cluster_livre_atual = proximo_cluster_livre
-        
-        #senao, quer dizer que acabou os clusters livres daquele bloco de clusters livres. Verificar
-        # se a qtd_clusters_livres é a qtd total do arquivo, senao for, quer dizer que tem mais
-        # clusters livres a frente. Dessa forma, verifica o ponteiro pro proximo e ai atualiza a partir dele.   
 
-        #atualizar BR
+        #atualizar BR - arquivo
         arq.seek(9)
         arq.write(int.to_bytes(prim_cluster_livre_atual, 4, "little"))
 
-    #senao, ir pro proximo cluster livre e ver se tem o suficiente vago
+        #atualizar RD - arquivo
+        arq.seek(setoresBootRecord*bytesPorSetor)
+        byte = 0
+        while int.from_bytes(arq.read(11), "little")!=0:
+            if int.from_bytes(arq.read(19), "little")==239:
+                break
+            byte += 32
+            arq.seek((setoresBootRecord*bytesPorSetor)+byte)
 
-    #setor_livre_atual = setores_prim_bloco_livre
-    #setor_bloco_livre = setor_livre_atual + ((proximo_bloco_livre - primeiroClusterLivre) * setoresPorCluster)
+        arq.seek((setoresBootRecord*bytesPorSetor)+byte)
+        nome_arquivo_bytes = bytes(arquivo[1], 'ascii')
+        arq.write(nome_arquivo_bytes[0:8])
+        arq.write(b'\x00' * (8-len(nome_arquivo_bytes)))
 
-    #while(tamanho_blocos_livres < arquivo[0] and proximo_bloco_livre != 16777215):
+        extensao_arquivo_bytes = bytes(arquivo[2], 'ascii')
+        arq.write(extensao_arquivo_bytes[0:3])
+        arq.write(b'\x00' * (3-len(extensao_arquivo_bytes)))
 
-            #arq.seek(bytesPorSetor*setor_bloco_livre)
-            #bloco_livre = arq.read(setor_bloco_livre+7)
-            #tamanho_blocos_livres = int.from_bytes(bloco_livre[0:3], "little")
-            #proximo_bloco_livre = int.from_bytes(bloco_livre[4:7], "little")
-            #setor_livre_atual = setor_bloco_livre
-            #setor_bloco_livre = setor_livre_atual
-
-    
+        arq.write(int.to_bytes(1, 1, "little"))
+        arq.write(int.to_bytes(primeiroClusterLivre, 4, "little"))
+        arq.write(int.to_bytes(arquivo[0], 3, "little"))
 
 
     
