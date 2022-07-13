@@ -8,13 +8,12 @@ operacoes = ['Abrir', 'Exportar', 'Adicionar arquivo', 'Formatar', 'Novo diretó
 def inicio():
     global bytesPorSetor, setoresPorCluster, dados, rootDir, setoresBootRecord, numSetoresRootDir, arq, primeiroClusterLivre
 
-    nomeArquivo = input("Insira o caminho do arquivo que deseja abrir: \n")
+    nomeArquivo = input("Insira o caminho do arquivo que deseja abrir: ")
 
     arq = open(nomeArquivo, 'rb+')
 
     #pega do arquivo os bytes referentes ao boot record
     bootRecord = arq.read(13)
-
 
     #dados do boot record
     bytesPorSetor = int.from_bytes(bootRecord[0:2], "little")
@@ -22,12 +21,12 @@ def inicio():
     setoresBootRecord = int.from_bytes(bootRecord[3:5], "little")
     totalSetores = int.from_bytes(bootRecord[5:7], "little")
     entradasRootDir = int.from_bytes(bootRecord[7:9], "little")
-    primeiroClusterLivre = int.from_bytes(bootRecord[9:13], "little")
+    primeiroClusterLivre = int.from_bytes(bootRecord[9:], "little")
 
     numSetoresRootDir = int((entradasRootDir*32)/bytesPorSetor)
     
     #pula o ponteiro do arquivo para o início do root dir
-    arq.seek((bytesPorSetor*setoresBootRecord)-13)
+    arq.seek((bytesPorSetor*setoresBootRecord))
 
     #pula o ponteiro do arquivo para o início do root dir
     #arq.seek(bytesPorSetor*setoresBootRecord)
@@ -83,10 +82,10 @@ def listagens(listaArquivos):
     #abrir um arq/dir
     if(opcaoEscolhida == 0):
         printarLista(listaArquivos)
-        numArquivo = int(input("Digite o número do arquivo que deseja abrir: "))
+        numArquivo = int(input("\nDigite o número do arquivo que deseja abrir: "))
 
         #numeros que não encaixam com os indices da lista
-        if(numArquivo < 0 or numArquivo >= sizeof(listaArquivos)):
+        if(numArquivo < 0 or numArquivo >= len(listaArquivos)):
             print("Opção inválida")
             listagens(listaArquivos)
         
@@ -129,22 +128,23 @@ def listagens(listaArquivos):
     elif(opcaoEscolhida == 5):
         exit()
     else:
-        print("----Opção inválida")
+        print("Opção inválida")
         listagens(listaArquivos)
 
 def printarLista(lista):
     aux = 0
+    print("\nLista de entradas:")
     for arquivo in lista:
         print(f"{aux} - Nome: {arquivo[0]} | Extensao: {arquivo[1]} | Tipo: {arquivo[2]} | Tamanho: {arquivo[3]} | First_cluster: {arquivo[4]}")
         aux +=1
 
 def printarOperacoes():
     aux = 0
-    print("\nDigite o número da operação abaixo que deseja realizar:")
+    print("\nOperações: ")
     for opcao in operacoes:
         print(f"{aux} - {opcao}")
         aux+=1
-    return input()
+    return input("\nDigite o número da operação que deseja realizar: ")
 
 def exportarArquivo(listaArquivos):
     printarLista(listaArquivos)
@@ -199,4 +199,5 @@ def formatar():
 
 
 if __name__ == '__main__':
-   inicio()
+    print("\n-----Sistema de Arquivos NonFAT-----\n")
+    inicio()
