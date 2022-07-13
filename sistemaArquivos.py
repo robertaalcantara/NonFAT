@@ -3,7 +3,7 @@ from numpy import ceil
 import os.path
 import Inserir
 
-operacoes = ['Abrir', 'Exportar', 'Adicionar', 'Formatar']
+operacoes = ['Abrir', 'Exportar', 'Adicionar arquivo', 'Formatar', 'Novo diretório', 'Sair']
 
 def inicio():
     global bytesPorSetor, setoresPorCluster, dados, rootDir, setoresBootRecord, numSetoresRootDir, arq, primeiroClusterLivre
@@ -83,7 +83,7 @@ def listagens(listaArquivos):
     #abrir um arq/dir
     if(opcaoEscolhida == 0):
         printarLista(listaArquivos)
-        numArquivo = input("Digite o número do arquivo que deseja abrir: ")
+        numArquivo = int(input("Digite o número do arquivo que deseja abrir: "))
 
         #numeros que não encaixam com os indices da lista
         if(numArquivo < 0 or numArquivo >= sizeof(listaArquivos)):
@@ -100,7 +100,15 @@ def listagens(listaArquivos):
         #abre um arquivo
         elif(arquivoAberto[2] == 'arquivo'):
             conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+arquivoAberto[5])*bytesPorSetor]   
-            print(conteudo.decode("ASCII"))      
+            print(conteudo.decode("ASCII")) 
+
+            print("\n\nO que deseja realizar?")
+            print("0 - Voltar para o diretório anterior\n1 - Sair do sistema de arquivos")
+            opcao = int(input())
+            if(opcao == 0):
+                listagens(listaArquivos)
+            else:
+                exit()
 
     #exportar um arquivo do sistema de arquivos para fora
     elif(opcaoEscolhida == 1):
@@ -111,9 +119,13 @@ def listagens(listaArquivos):
         Inserir.inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir)
         #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
 
-    #formatar o disco
+    #formatar os setores
     elif(opcaoEscolhida == 3):
         formatar()
+    elif(opcaoEscolhida == 4):
+        novoDiretorio()
+    elif(opcaoEscolhida == 5):
+        exit()
     else:
         print("----Opção inválida")
         listagens(listaArquivos)
@@ -131,6 +143,7 @@ def printarOperacoes():
         print(f"{aux} - {opcao}")
         aux+=1
     return input()
+
 def exportarArquivo(listaArquivos):
     printarLista(listaArquivos)
 
