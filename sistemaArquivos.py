@@ -1,5 +1,6 @@
 from ctypes import sizeof
 from numpy import ceil
+import os.path
 
 operacoes = ['Abrir', 'Exportar', 'Adicionar', 'Formatar']
 
@@ -11,7 +12,7 @@ def inicio():
     #pega do arquivo os bytes referentes ao boot record
     bootRecord = arq.read(13)
 
-    global bytesPorSetor, setoresPorCluster, dados
+    global bytesPorSetor, setoresPorCluster, dados, rootDir
 
     #dados do boot record
     bytesPorSetor = int.from_bytes(bootRecord[0:2], "little")
@@ -98,7 +99,7 @@ def listagens(listaArquivos):
 
     #exportar um arquivo do sistema de arquivos para fora
     elif(opcaoEscolhida == 1):
-        exportarArquivo()
+        exportarArquivo(listaArquivos)
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
@@ -125,3 +126,53 @@ def printarOperacoes():
         print(f"{aux} - {opcao}")
     
     return input()
+def exportarArquivo(listaArquivos):
+    printarLista(listaArquivos)
+
+    num = input('Digite o numero do arquivo que deseja exportar: ')
+
+    escolhido = listaArquivos[num]
+
+    if escolhido[2] != 'arquivo':
+        print('Selecione um arquivo')
+        exportarArquivo(listaArquivos)
+
+    path = input('Digite o caminho do local que deseja exportar o arquivo: ')
+    nome = escolhido[0]
+    ext = escolhido[1]
+    FirstC = escolhido[4]
+    nomeCompleto = os.path.join(path, nome+ext)
+
+    setorInicio = escolhido[4] * setoresPorCluster
+    conteudoByte = dados[setorInicio*bytesPorSetor:(setorInicio+escolhido[5])*bytesPorSetor]   
+
+    conteudo = conteudoByte.decode("ASCII")
+    with open(nomeCompleto,'w') as f:
+        f.write(conteudo)
+
+def formatar():
+
+    numSetores = input('Numero de setores que deseja formatar: ')
+    # recebo em setores e tenho que calcular numero de cluster com estes setores
+    numCluster = numSetores/setoresPorCluster
+    # clusters formatados sao adicionadas na lista de clusters livres
+    # colocar na posicao 19 0xff ou 239
+    # se excluir um deretorio do diretorio raiz q tem arquivos e outros diretorios, isso conta na quantidade de setores q tem q ser formatados?
+    i = 0
+    while(rootDir[i+11] != 0):
+        #verifica se o arquivo foi excluído
+        if rootDir[i+19] == 239:
+            i +=32
+            continue
+        tamanhoArquivo = int.from_bytes(rootDir[i + 16:i + 19], "little")
+        
+        #cálculo do número de clusters utilizados
+        numClusterUtilizados = int(ceil(int(ceil(tamanhoArquivo / bytesPorSetor))/setoresPorCluster))
+        if numClusterUtilizados<=numCluster:
+            rootDir[i+19] = 239
+            numCluster=numCluster-numClusterUtilizados
+            firstCluster = int.from_bytes(rootDir[i + 12:i + 16], "little")
+            # colocar na lista os clusters que agora estao liberados
+        i+=32
+    print('Formatação finalizada')
+    printarConteudoDir()
