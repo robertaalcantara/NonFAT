@@ -116,14 +116,16 @@ def listagens(listaArquivos):
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
-        Inserir.inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir)
+        #passar endereço de onde eu to inserindo esse arquivo
+        Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1)
         #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
 
     #formatar os setores
     elif(opcaoEscolhida == 3):
         formatar()
     elif(opcaoEscolhida == 4):
-        novoDiretorio()
+        #passar endereço de onde eu to inserindo esse diretório
+        Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2)
     elif(opcaoEscolhida == 5):
         exit()
     else:
