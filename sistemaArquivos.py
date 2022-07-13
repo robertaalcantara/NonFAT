@@ -18,7 +18,7 @@ def inicio():
 
     #dados do boot record
     bytesPorSetor = int.from_bytes(bootRecord[0:2], "little")
-    setoresPorCluster = int.from_bytes(bootRecord[2], "little")
+    setoresPorCluster = bootRecord[2]
     setoresBootRecord = int.from_bytes(bootRecord[3:5], "little")
     totalSetores = int.from_bytes(bootRecord[5:7], "little")
     entradasRootDir = int.from_bytes(bootRecord[7:9], "little")
@@ -36,7 +36,7 @@ def inicio():
     rootDir = arq.read(numSetoresRootDir * bytesPorSetor)
     dados = arq.read((totalSetores-setoresBootRecord-numSetoresRootDir) * bytesPorSetor)
 
-   # printarConteudoDir(rootDir)
+    printarConteudoDir(rootDir)
 
 def printarConteudoDir(diretorio):  
     posIn = 0  
@@ -78,8 +78,8 @@ def listagens(listaArquivos):
 
     printarLista(listaArquivos)
 
-    opcaoEscolhida = printarOperacoes()
-
+    opcaoEscolhida = int(printarOperacoes())
+    
     #abrir um arq/dir
     if(opcaoEscolhida == 0):
         printarLista(listaArquivos)
@@ -115,7 +115,7 @@ def listagens(listaArquivos):
     elif(opcaoEscolhida == 3):
         formatar()
     else:
-        print("Opção inválida")
+        print("----Opção inválida")
         listagens(listaArquivos)
 
 def printarLista(lista):
@@ -129,7 +129,7 @@ def printarOperacoes():
     print("\nDigite o número da operação abaixo que deseja realizar:")
     for opcao in operacoes:
         print(f"{aux} - {opcao}")
-    
+        aux+=1
     return input()
 def exportarArquivo(listaArquivos):
     printarLista(listaArquivos)
@@ -181,3 +181,7 @@ def formatar():
         i+=32
     print('Formatação finalizada')
     printarConteudoDir()
+
+
+if __name__ == '__main__':
+   inicio()
