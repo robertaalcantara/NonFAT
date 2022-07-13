@@ -1,9 +1,10 @@
 from numpy import ceil
+import Inserir
 
 def inicio():
     nomeArquivo = input("Insira o caminho do arquivo que deseja abrir: \n")
 
-    arq = open(nomeArquivo, 'rb')
+    arq = open(nomeArquivo, 'rb+')
 
     #pega do arquivo os bytes referentes ao boot record
     bootRecord = arq.read(13)
@@ -18,15 +19,17 @@ def inicio():
     entradasRootDir = int.from_bytes(bootRecord[7:9], "little")
     primeiroClusterLivre = int.from_bytes(bootRecord[9:13], "little")
 
-    #pula o ponteiro do arquivo para o início do root dir
-    arq.seek(bytesPorSetor*setoresBootRecord)
+    numSetoresRootDir = int((entradasRootDir*32)/bytesPorSetor)
+    
+    Inserir.inserir_arquivo(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, totalSetores)
 
-    numSetoresRootDir = int((entradasRootDir *32)/bytesPorSetor)
+    #pula o ponteiro do arquivo para o início do root dir
+    #arq.seek(bytesPorSetor*setoresBootRecord)
 
      # pega cdo arquivo os bytes referentes ao root dir
-    rootDir = arq.read(numSetoresRootDir * bytesPorSetor)
+    #rootDir = arq.read(numSetoresRootDir * bytesPorSetor)
 
-    printarConteudoDir(rootDir)
+   # printarConteudoDir(rootDir)
 
 def printarConteudoDir(diretorio):  
     posIn = 0  
@@ -69,6 +72,7 @@ def printarConteudoDir(diretorio):
         print(f"{aux} - Nome: {arquivo[0]} | Extensao: {arquivo[1]} | Tipo: {arquivo[2]} | Tamanho: {arquivo[3]} | First_cluster: {arquivo[4]}")
         aux +=1
 
+inicio()
 
 
 
