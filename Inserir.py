@@ -18,7 +18,7 @@ def info_arquivo():
 
     return(tamanho_arquivo, nome_arquivo, extensao_arquivo, conteudo_arquivo)    
 
-def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, tipo, ponteiro_diretorio_pai):
+def inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, tipo, ponteiro_diretorio_pai):
 
     cluster_livre = True
     bytes_cluster = bytesPorSetor*setoresPorCluster
@@ -33,6 +33,10 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
         qtd_clusters = numSetoresRootDir
 
     #pula o ponteiro do arquivo para o início do primeiro bloco livre
+
+    arq.seek(9)
+    primeiroClusterLivre = int.from_bytes(arq.read(4), "little")
+
     prim_setor_livre = setoresBootRecord + numSetoresRootDir + (primeiroClusterLivre*setoresPorCluster)
     arq.seek(bytesPorSetor*prim_setor_livre)
 
@@ -41,16 +45,21 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
 
     while qtd_clusters_livres < qtd_clusters:
 
-        prim_setor_livre = setoresBootRecord + numSetoresRootDir + (proximo_cluster_livre*setoresPorCluster)
-        arq.seek(bytesPorSetor*prim_setor_livre)
-        qtd_clusters_livres = int.from_bytes(arq.read(4), "little")
-        proximo_cluster_livre = int.from_bytes(arq.read(4), "little")
-
         if(proximo_cluster_livre == 4278190079):
             cluster_livre = False
-            print("Não há clusters disponíveis para o seu arquivo/diretõrio!")
+            print("\nNão há clusters disponíveis para o seu arquivo/diretório!")
+            print(":(")
+            exit()
+        else:
+            prim_setor_livre = setoresBootRecord + numSetoresRootDir + (proximo_cluster_livre*setoresPorCluster)
+            arq.seek(bytesPorSetor*prim_setor_livre)
+            qtd_clusters_livres = int.from_bytes(arq.read(4), "little")
+            proximo_cluster_livre = int.from_bytes(arq.read(4), "little")
         
     if(cluster_livre == True):
+        #limpar area de dados
+        arq.seek(bytesPorSetor*prim_setor_livre)
+        arq.write(b'\x00'*(qtd_clusters*bytes_cluster))
         arq.seek(bytesPorSetor*prim_setor_livre)
         if(tipo == 1):
             arq.write(arquivo[3])
@@ -116,7 +125,8 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
         arq.seek(qtd_bytes)
         byte = 0
         while int.from_bytes(arq.read(11), "little")!=0:
-            if int.from_bytes(arq.read(19), "little")==239:
+            arq.read(8)
+            if int.from_bytes(arq.read(8), "little")==239:
                 break
             byte += 32
             arq.seek(qtd_bytes+byte)
@@ -134,6 +144,8 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
             arq.write(int.to_bytes(1, 1, "little"))
             arq.write(int.to_bytes(primeiroClusterLivre, 4, "little"))
             arq.write(int.to_bytes(arquivo[0], 3, "little"))
+
+            arq.write(b'\x00' * 12)
         else:
             nome_diretorio_bytes = bytes(nome_diretorio, 'ascii')
             arq.write(nome_diretorio_bytes[0:8])
@@ -143,7 +155,8 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
             arq.write(int.to_bytes(2, 1, "little"))
             arq.write(int.to_bytes(primeiroClusterLivre, 4, "little"))
             arq.write(int.to_bytes(0, 3, "little"))
-        
+
+            arq.write(b'\x00' * 12)
 
         
             

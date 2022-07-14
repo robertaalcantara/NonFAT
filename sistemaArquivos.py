@@ -6,11 +6,7 @@ import Inserir
 operacoes = ['Abrir', 'Exportar', 'Adicionar arquivo', 'Formatar', 'Novo diretório', 'Sair']
 
 def inicio():
-    global bytesPorSetor, setoresPorCluster, dados, rootDir, setoresBootRecord, numSetoresRootDir, arq, primeiroClusterLivre
-
-    nomeArquivo = input("Insira o caminho do arquivo que deseja abrir: ")
-
-    arq = open(nomeArquivo, 'rb+')
+    global bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, arq, totalSetores, dados, rootDir
 
     #pega do arquivo os bytes referentes ao boot record
     bootRecord = arq.read(13)
@@ -21,14 +17,13 @@ def inicio():
     setoresBootRecord = int.from_bytes(bootRecord[3:5], "little")
     totalSetores = int.from_bytes(bootRecord[5:7], "little")
     entradasRootDir = int.from_bytes(bootRecord[7:9], "little")
-    primeiroClusterLivre = int.from_bytes(bootRecord[9:], "little")
+    #primeiroClusterLivre = int.from_bytes(bootRecord[9:], "little")
 
     numSetoresRootDir = int((entradasRootDir*32)/bytesPorSetor)
-    
+
     #pula o ponteiro do arquivo para o início do root dir
     arq.seek(bytesPorSetor*setoresBootRecord)
 
-    #pega do arquivo os bytes referentes ao root dir
     rootDir = arq.read(numSetoresRootDir * bytesPorSetor)
     dados = arq.read((totalSetores-setoresBootRecord-numSetoresRootDir) * bytesPorSetor)
 
@@ -80,14 +75,17 @@ def listagens(listaArquivos):
     if(root):
         PonteiroDiretorioPai = setoresBootRecord*bytesPorSetor
     else:
-        PonteiroDiretorioPai = listaArquivos[0][4] 
+        PonteiroDiretorioPai = listaArquivos[0][4]
 
-    printarLista(listaArquivos)
+    #printarLista(listaArquivos)
 
     opcaoEscolhida = int(printarOperacoes())
     
     #abrir um arq/dir
     if(opcaoEscolhida == 0):
+        if(len(listaArquivos) == 0):
+            print("\nLista vazia. Opção inválida.")
+            listagens(listaArquivos)
         printarLista(listaArquivos)
         numArquivo = int(input("\nDigite o número do arquivo que deseja abrir: "))
 
@@ -104,47 +102,76 @@ def listagens(listaArquivos):
             if(arquivoAberto[4] == 2053726546):
                 conteudo = rootDir
             else:
-                conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+1)*bytesPorSetor]
+                conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+numSetoresRootDir)*bytesPorSetor]
             printarConteudoDir(conteudo)
         #abre um arquivo
         elif(arquivoAberto[2] == 'arquivo'):
-            conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+arquivoAberto[5])*bytesPorSetor]   
-            print(conteudo.decode("ASCII")) 
+            conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+(arquivoAberto[5]*setoresPorCluster))*bytesPorSetor]   
+            print(conteudo) 
 
-            print("\n\nO que deseja realizar?")
-            print("0 - Voltar para o diretório anterior\n1 - Sair do sistema de arquivos")
-            opcao = int(input())
-            if(opcao == 0):
-                listagens(listaArquivos)
-            else:
-                exit()
+            fechar(listaArquivos)
 
     #exportar um arquivo do sistema de arquivos para fora
     elif(opcaoEscolhida == 1):
+        if(len(listaArquivos) == 0):
+            print("\nLista vazia. Opção inválida.")
+            listagens(listaArquivos)
         exportarArquivo(listaArquivos)
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
-        Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai)
-        #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
-        
+        Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai)
+        alterar_info(PonteiroDiretorioPai)
+        fechar(listaArquivos)
+
     #formatar os setores
     elif(opcaoEscolhida == 3):
         formatar()
     #adicionar diretorio no sistema de arquivos
     elif(opcaoEscolhida == 4):
-         Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai)
+         Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai)
+         alterar_info(PonteiroDiretorioPai)
+         fechar(listaArquivos)
     elif(opcaoEscolhida == 5):
+        arq.close()
         exit()
     else:
         print("Opção inválida")
         listagens(listaArquivos)
 
+def alterar_info(PonteiroDiretorioPai):
+    global dados, rootDir
+    arq.seek(0)
+
+    arq.seek(bytesPorSetor*setoresBootRecord)
+
+    rootDir = arq.read(numSetoresRootDir * bytesPorSetor)
+    dados = arq.read((totalSetores-setoresBootRecord-numSetoresRootDir) * bytesPorSetor)
+
+    if(PonteiroDiretorioPai == (bytesPorSetor*setoresBootRecord)):
+        printarConteudoDir(rootDir)
+    else:
+
+        setores_diretorio_pai = PonteiroDiretorioPai*setoresPorCluster
+        qtd_bytes = setores_diretorio_pai*bytesPorSetor
+
+        print(PonteiroDiretorioPai)
+
+        print(qtd_bytes)
+        print(qtd_bytes+numSetoresRootDir*bytesPorSetor)
+        printarConteudoDir(dados[qtd_bytes:qtd_bytes+numSetoresRootDir*bytesPorSetor])
+
+    arq.read(qtd_bytes)
+
 def printarLista(lista):
     aux = 0
     print("\nLista de entradas:")
     for arquivo in lista:
-        print(f"{aux} - Nome: {arquivo[0]} | Extensao: {arquivo[1]} | Tipo: {arquivo[2]} | Tamanho: {arquivo[3]} | First_cluster: {arquivo[4]}")
+        if(arquivo[4] == 2053726546):
+            print(f"{aux} - Nome: {arquivo[0]} | Extensao: {arquivo[1]} | Tipo: {arquivo[2]} | Tamanho: {arquivo[3]} | First_cluster: Raiz")
+        else:
+            print(f"{aux} - Nome: {arquivo[0]} | Extensao: {arquivo[1]} | Tipo: {arquivo[2]} | Tamanho: {arquivo[3]} | First_cluster: {arquivo[4]}")
+
         aux +=1
 
 def printarOperacoes():
@@ -169,16 +196,17 @@ def exportarArquivo(listaArquivos):
     path = input('Digite o caminho do local que deseja exportar o arquivo: ')
     nome = escolhido[0]
     ext = escolhido[1]
-    FirstC = escolhido[4]
     nomeCompleto = os.path.join(path, nome+'.'+ext)
     # nomeCompleto = path+'\\'+nome+'.'+ext
     setorInicio = escolhido[4] * setoresPorCluster
-    conteudoByte = dados[setorInicio*bytesPorSetor:(setorInicio+escolhido[5])*bytesPorSetor]   
-
-    conteudo = conteudoByte.decode("ASCII")
+    conteudoByte = dados[setorInicio*bytesPorSetor:(setorInicio+(escolhido[5]*setoresPorCluster))*bytesPorSetor]   
     
-    with open(nomeCompleto.replace(chr(0), ""),"w") as f:
-        f.write(conteudo)
+    with open(nomeCompleto.replace(chr(0), ""),"wb") as f:
+        f.write(conteudoByte)
+
+    fechar(listaArquivos)
+
+def fechar(listaArquivos):
 
     print("\n\nO que deseja realizar?")
     print("0 - Voltar para o diretório anterior\n1 - Sair do sistema de arquivos")
@@ -186,7 +214,9 @@ def exportarArquivo(listaArquivos):
     if(opcao == 0):
         listagens(listaArquivos)
     else:
+        arq.close()
         exit()
+
 def formatar():
 
     # numSetores = int(input('Numero de setores que deseja formatar: '))
@@ -211,8 +241,17 @@ def formatar():
         
         i+=32
         arq.seek(rotDir+i)
+
+    # atualizar BR
     arq.seek(9)
     arq.write(int.to_bytes(0, 4, "little"))
+
+    # atualizar First Cluster
+    arq.seek((setoresBootRecord+numSetoresRootDir)*bytesPorSetor)
+    arq.write(int.to_bytes(14991, 4, "little"))
+
+    #ponteiro pro próximo
+    arq.write(int.to_bytes(4278190079, 4, "little"))
 
     print('Formatação finalizada')
     # printarConteudoDir(rootDir)
@@ -220,4 +259,7 @@ def formatar():
 
 if __name__ == '__main__':
     print("\n-----Sistema de Arquivos NonFAT-----\n")
+    nomeArquivo = input("Insira o caminho do arquivo que deseja abrir: ")
+    arq = open(nomeArquivo, 'rb+')
+
     inicio()
