@@ -16,10 +16,11 @@ def info_arquivo():
     nome_arquivo, extensao_arquivo = os.path.splitext(arquivo)
     extensao_arquivo = extensao_arquivo.replace(extensao_arquivo[0], "")
 
-    return(tamanho_arquivo, nome_arquivo, extensao_arquivo, conteudo_arquivo)
+    return(tamanho_arquivo, nome_arquivo, extensao_arquivo, conteudo_arquivo)    
 
 def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, tipo, ponteiro_diretorio_pai):
 
+    cluster_livre = True
     bytes_cluster = bytesPorSetor*setoresPorCluster
     raiz = setoresBootRecord*bytesPorSetor
 
@@ -37,9 +38,20 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
 
     qtd_clusters_livres = int.from_bytes(arq.read(4), "little")
     proximo_cluster_livre = int.from_bytes(arq.read(4), "little")
-    arq.seek(bytesPorSetor*prim_setor_livre)
-    
-    if(qtd_clusters_livres >= qtd_clusters):
+
+    while qtd_clusters_livres < qtd_clusters:
+
+        prim_setor_livre = setoresBootRecord + numSetoresRootDir + (proximo_cluster_livre*setoresPorCluster)
+        arq.seek(bytesPorSetor*prim_setor_livre)
+        qtd_clusters_livres = int.from_bytes(arq.read(4), "little")
+        proximo_cluster_livre = int.from_bytes(arq.read(4), "little")
+
+        if(proximo_cluster_livre == 4278190079):
+            cluster_livre = False
+            print("Não há clusters disponíveis para o seu arquivo/diretõrio!")
+        
+    if(cluster_livre == True):
+        arq.seek(bytesPorSetor*prim_setor_livre)
         if(tipo == 1):
             arq.write(arquivo[3])
             arq.write(b'\x00'*(bytes_cluster - (arquivo[0])%bytes_cluster))
@@ -131,6 +143,7 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
             arq.write(int.to_bytes(2, 1, "little"))
             arq.write(int.to_bytes(primeiroClusterLivre, 4, "little"))
             arq.write(int.to_bytes(0, 3, "little"))
+        
 
         
             
