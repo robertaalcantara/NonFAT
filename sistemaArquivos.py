@@ -28,7 +28,7 @@ def inicio():
     #pula o ponteiro do arquivo para o início do root dir
     arq.seek(bytesPorSetor*setoresBootRecord)
 
-     #pega do arquivo os bytes referentes ao root dir
+    #pega do arquivo os bytes referentes ao root dir
     rootDir = arq.read(numSetoresRootDir * bytesPorSetor)
     dados = arq.read((totalSetores-setoresBootRecord-numSetoresRootDir) * bytesPorSetor)
 
@@ -71,6 +71,15 @@ def printarConteudoDir(diretorio):
     listagens(listaArquivos)
     
 def listagens(listaArquivos):
+    #percorrer a lista de arquivos para saber se é um subdiretorio ou raiz
+    root = True
+    for arquivo in listaArquivos:
+        if(arquivo[0] == '..      '):
+            root = False
+    if(root):
+        PonteiroDiretorioPai = setoresBootRecord*bytesPorSetor
+    else:
+        PonteiroDiretorioPai = listaArquivos[0][4] 
 
     printarLista(listaArquivos)
 
@@ -112,17 +121,15 @@ def listagens(listaArquivos):
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
-        #passar endereço de onde eu to inserindo esse arquivo
-        Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1)
+        Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai)
         #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
         
     #formatar os setores
     elif(opcaoEscolhida == 3):
         formatar()
+    #adicionar diretorio no sistema de arquivos
     elif(opcaoEscolhida == 4):
-        #passar endereço de onde eu to inserindo esse diretório
-        Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2)
-       
+         Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai)
     elif(opcaoEscolhida == 5):
         exit()
     else:
