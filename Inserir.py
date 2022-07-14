@@ -8,7 +8,7 @@ def info_arquivo():
 
     with open(caminho_arquivo, 'rb') as leitura_arquivo:
          conteudo_arquivo = leitura_arquivo.read(-1)
-    leitura_arquivo.close()
+         leitura_arquivo.close()
 
     tamanho_arquivo = Path(caminho_arquivo).stat().st_size 
 
@@ -18,9 +18,10 @@ def info_arquivo():
 
     return(tamanho_arquivo, nome_arquivo, extensao_arquivo, conteudo_arquivo)
 
-def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, tipo):
+def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, tipo, ponteiro_diretorio_pai):
 
     bytes_cluster = bytesPorSetor*setoresPorCluster
+    raiz = setoresBootRecord*bytesPorSetor
 
     if(tipo == 1):
         arquivo = []
@@ -29,7 +30,6 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
     else:
         nome_diretorio = input("Insira o nome do diretório: \n")
         qtd_clusters = numSetoresRootDir
-        tam_diretorio_bytes = qtd_clusters*bytes_cluster
 
     #pula o ponteiro do arquivo para o início do primeiro bloco livre
     prim_setor_livre = setoresBootRecord + numSetoresRootDir + (primeiroClusterLivre*setoresPorCluster)
@@ -50,6 +50,8 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
             # sem extensao
             arq.write(b'\x00' * 3)
             arq.write(int.to_bytes(2, 1, "little"))
+            arq.write(int.to_bytes(primeiroClusterLivre, 4, "little"))
+            arq.write(int.to_bytes(0, 3, "little"))
 
             arq.seek((bytesPorSetor*prim_setor_livre) + 32)
 
@@ -58,7 +60,16 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
             arq.write(b'\x20' * (8-len(diretorio_pai)))
             # sem extensao
             arq.write(b'\x00' * 3)
-            arq.write(int.to_bytes(2, 1, "little"))
+            arq.write(int.to_bytes(2, 1, "little")) 
+
+            if(ponteiro_diretorio_pai == raiz):
+
+                raiz_bytes = bytes('Raiz', 'ascii')
+                arq.write(raiz_bytes[0:8])
+                arq.write(b'\x00' * (8-len(raiz_bytes)))
+            else:
+                arq.write(int.to_bytes(ponteiro_diretorio_pai, 4, "little"))
+                arq.write(int.to_bytes(0, 3, "little"))           
 
         clusters_livres = qtd_clusters_livres - qtd_clusters
         if(clusters_livres > 0):
@@ -82,17 +93,23 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
         arq.seek(9)
         arq.write(int.to_bytes(prim_cluster_livre_atual, 4, "little"))
 
-        #atualizar RD 
-        #Aqui é o ponteiro que muda caso seja dentro de um diretório diferente
-        arq.seek(setoresBootRecord*bytesPorSetor)
+        #atualizar RD ou diretorio pai
+        
+        if(ponteiro_diretorio_pai == raiz):
+            qtd_bytes = raiz
+        else:
+            setores_diretorio_pai = ponteiro_diretorio_pai*setoresPorCluster
+            qtd_bytes = (setoresBootRecord+numSetoresRootDir+setores_diretorio_pai)*bytesPorSetor
+
+        arq.seek(qtd_bytes)
         byte = 0
         while int.from_bytes(arq.read(11), "little")!=0:
             if int.from_bytes(arq.read(19), "little")==239:
                 break
             byte += 32
-            arq.seek((setoresBootRecord*bytesPorSetor)+byte)
+            arq.seek(qtd_bytes+byte)
 
-        arq.seek((setoresBootRecord*bytesPorSetor)+byte)
+        arq.seek(qtd_bytes+byte)
         if(tipo == 1):
             nome_arquivo_bytes = bytes(arquivo[1], 'ascii')
             arq.write(nome_arquivo_bytes[0:8])
@@ -113,7 +130,9 @@ def inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setores
             arq.write(b'\x00' * 3)
             arq.write(int.to_bytes(2, 1, "little"))
             arq.write(int.to_bytes(primeiroClusterLivre, 4, "little"))
-            arq.write(int.to_bytes(tam_diretorio_bytes, 3, "little"))
+            arq.write(int.to_bytes(0, 3, "little"))
+
+        
             
 
 
