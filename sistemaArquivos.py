@@ -74,6 +74,7 @@ def printarConteudoDir(diretorio):
     listagens(listaArquivos)
     
 def listagens(listaArquivos):
+    #percorrer a lista de arquivos para saber se é um subdiretorio ou raiz
     root = True
     for arquivo in listaArquivos:
         if(arquivo[0] == '..      '):
