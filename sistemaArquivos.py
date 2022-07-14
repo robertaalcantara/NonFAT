@@ -72,6 +72,7 @@ def printarConteudoDir(diretorio):
     
 def listagens(listaArquivos):
     #percorrer a lista de arquivos para saber se é um subdiretorio ou raiz
+    PonteiroDiretorioPai = 0
     root = True
     for arquivo in listaArquivos:
         if(arquivo[0] == '..      '):
@@ -100,7 +101,10 @@ def listagens(listaArquivos):
 
         #abre um diretorio
         if(arquivoAberto[2] == 'diretorio'):
-            conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+1)*bytesPorSetor]
+            if(arquivoAberto[4] == 2053726546):
+                conteudo = rootDir
+            else:
+                conteudo = dados[setorInicio*bytesPorSetor:(setorInicio+1)*bytesPorSetor]
             printarConteudoDir(conteudo)
         #abre um arquivo
         elif(arquivoAberto[2] == 'arquivo'):
