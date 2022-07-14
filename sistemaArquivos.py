@@ -123,9 +123,6 @@ def listagens(listaArquivos):
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
-        # percorrer a lista pelo nome para verificar se existe algum em que o nome é '..'. Se houver -> PonteiroDiretorioPai = arquivoAberto[4]
-        # Senao -> PonteiroDiretorioPai = setoresBootRecord*bytesPorSetor
-
         Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai)
         #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
 
@@ -134,9 +131,7 @@ def listagens(listaArquivos):
         formatar()
     #adicionar diretorio no sistema de arquivos
     elif(opcaoEscolhida == 4):
-        # percorrer a lista pelo nome para verificar se existe algum em que o nome é '..'. Se houver -> PonteiroDiretorioPai = arquivoAberto[4]
-        # Senao -> PonteiroDiretorioPai = setoresBootRecord*bytesPorSetor
-        Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai)
+         Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai)
     elif(opcaoEscolhida == 5):
         exit()
     else:
