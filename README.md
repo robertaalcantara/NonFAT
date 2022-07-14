@@ -24,11 +24,11 @@ Cada operação é acompanhada de um índice que se encontra a sua esquerda. Qua
 
 A lista das entradas será exibida para que o usuário escolha qual deseja abrir. O número a ser digitado refere-se ao índice da entrada que deseja abrir, portanto índices que não se enquadram com a lista são consideradas opções inválidas. 
 
-Caso o índice seja referente a um arquivo, será exibido para o usuário o conteúdo presente nele. Após isso, o usuário pode optar por voltar para o diretório que estava anteriormente (opção 0) ou sair do sistema de arquivos (opção 1). Valores diferentes de 0 e 1 farão com que o sistema seja encerrado, assim como se tem com o índice 1.
+Caso o índice seja referente a um arquivo, será exibido para o usuário o conteúdo presente nele em bytes. Após isso, o usuário pode optar por voltar para o diretório que estava anteriormente (opção 0) ou sair do sistema de arquivos (opção 1). Valores diferentes de 0 e 1 farão com que o sistema seja encerrado, assim como se tem com o índice 1.
 
 ### Opção 1) Exportar
 
-Novamente a lista das entradas será exibida para que o usuário escolha qual deseja exportar para seu disco rígido. Necessariamente essa entrada deve corresponder a um arquivo.txt, visto que não é possível a exportação de diretório pelo NonFAT. Enquanto o usuário não digitar um índice que corresponda a uma entrada do tipo arquivo lhe será pedido para informar outro índice.
+Novamente a lista das entradas será exibida para que o usuário escolha qual deseja exportar para seu disco rígido. Necessariamente essa entrada deve corresponder a um arquivo, visto que não é possível a exportação de diretório pelo NonFAT. Enquanto o usuário não digitar um índice que corresponda a uma entrada do tipo arquivo, lhe será pedido para informar outro índice.
 
 Com o arquivo selecionado, basta indicar qual o caminho para o qual o arquivo será exportado.
 
@@ -36,16 +36,16 @@ Após isso, o usuário pode optar por voltar para o diretório que estava anteri
 
 ### Opção 2) Adicionar arquivo
 
-Para adicionar um arquivo do disco rígido deve ser informado qual o seu caminho. O arquivo será adicionado no diretorio atual.
+Para adicionar um arquivo do disco rígido deve ser informado qual o seu caminho. O arquivo será adicionado no diretório atual.
 
 
 ### Opção 3) Formatar
 
-Nos arquivos e diretórios presentes será atualizado o a posição do byte 19 para 0xEF (arquivo excluido). 
+Nos arquivos e diretórios presentes no Root Dir será atualizada a posição do byte 19 para 0xEF (arquivo excluido). 
 
 ### Opção 4) Novo diretório
 
-O diretório a ser criado inicialmente estará vazio, portanto a única informação que deve ser indicada é o nome que se deseja atribuir a ele. Nele serão criados automaticamente as opções . (continuar no diretorio atual) e .. (voltar para o diretorio pai)
+O diretório a ser criado inicialmente estará vazio, portanto a única informação que deve ser indicada é o nome que se deseja atribuir a ele. Nele serão criados automaticamente as opções . (continuar no diretorio atual) e .. (voltar para o diretorio pai).
 
 ### Opção 5) Sair
 
