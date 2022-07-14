@@ -26,10 +26,7 @@ def inicio():
     numSetoresRootDir = int((entradasRootDir*32)/bytesPorSetor)
     
     #pula o ponteiro do arquivo para o início do root dir
-    arq.seek((bytesPorSetor*setoresBootRecord))
-
-    #pula o ponteiro do arquivo para o início do root dir
-    #arq.seek(bytesPorSetor*setoresBootRecord)
+    arq.seek(bytesPorSetor*setoresBootRecord)
 
      #pega do arquivo os bytes referentes ao root dir
     rootDir = arq.read(numSetoresRootDir * bytesPorSetor)
@@ -118,13 +115,14 @@ def listagens(listaArquivos):
         #passar endereço de onde eu to inserindo esse arquivo
         Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1)
         #lembrar de atualizar o conteudo da variavel dados sempre que um arquivo for adicionado
-
+        
     #formatar os setores
     elif(opcaoEscolhida == 3):
         formatar()
     elif(opcaoEscolhida == 4):
         #passar endereço de onde eu to inserindo esse diretório
         Inserir.inserir(arq, primeiroClusterLivre, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2)
+       
     elif(opcaoEscolhida == 5):
         exit()
     else:
@@ -149,7 +147,7 @@ def printarOperacoes():
 def exportarArquivo(listaArquivos):
     printarLista(listaArquivos)
 
-    num = input('Digite o numero do arquivo que deseja exportar: ')
+    num = int(input('Digite o numero do arquivo que deseja exportar: '))
 
     escolhido = listaArquivos[num]
 
@@ -161,41 +159,52 @@ def exportarArquivo(listaArquivos):
     nome = escolhido[0]
     ext = escolhido[1]
     FirstC = escolhido[4]
-    nomeCompleto = os.path.join(path, nome+ext)
-
+    nomeCompleto = os.path.join(path, nome+'.'+ext)
+    # nomeCompleto = path+'\\'+nome+'.'+ext
     setorInicio = escolhido[4] * setoresPorCluster
     conteudoByte = dados[setorInicio*bytesPorSetor:(setorInicio+escolhido[5])*bytesPorSetor]   
 
     conteudo = conteudoByte.decode("ASCII")
-    with open(nomeCompleto,'w') as f:
+    
+    with open(nomeCompleto.replace(chr(0), ""),"w") as f:
         f.write(conteudo)
 
+    print("\n\nO que deseja realizar?")
+    print("0 - Voltar para o diretório anterior\n1 - Sair do sistema de arquivos")
+    opcao = int(input())
+    if(opcao == 0):
+        listagens(listaArquivos)
+    else:
+        exit()
 def formatar():
 
-    numSetores = input('Numero de setores que deseja formatar: ')
+    # numSetores = int(input('Numero de setores que deseja formatar: '))
     # recebo em setores e tenho que calcular numero de cluster com estes setores
-    numCluster = numSetores/setoresPorCluster
+    # numCluster = numSetores/setoresPorCluster
     # clusters formatados sao adicionadas na lista de clusters livres
     # colocar na posicao 19 0xff ou 239
     # se excluir um deretorio do diretorio raiz q tem arquivos e outros diretorios, isso conta na quantidade de setores q tem q ser formatados?
     i = 0
-    while(rootDir[i+11] != 0):
+    rotDir = arq.seek(bytesPorSetor*setoresBootRecord)
+
+    while int.from_bytes(arq.read(11), "little")!=0:
         #verifica se o arquivo foi excluído
-        if rootDir[i+19] == 239:
+        if int.from_bytes(arq.read(19), "little")== 239:
             i +=32
+            arq.seek(rotDir+i)
             continue
-        tamanhoArquivo = int.from_bytes(rootDir[i + 16:i + 19], "little")
-        
+ 
         #cálculo do número de clusters utilizados
-        numClusterUtilizados = int(ceil(int(ceil(tamanhoArquivo / bytesPorSetor))/setoresPorCluster))
-        if numClusterUtilizados<=numCluster:
-            rootDir[i+19] = 239
-            numCluster=numCluster-numClusterUtilizados
-            firstCluster = int.from_bytes(rootDir[i + 12:i + 16], "little")
-            # colocar na lista os clusters que agora estao liberados
+        arq.seek(arq.tell()-11)
+        arq.write(int.to_bytes(239, 1, "little"))
+        
         i+=32
+        arq.seek(rotDir+i)
+    arq.seek(9)
+    arq.write(int.to_bytes(0, 4, "little"))
+
     print('Formatação finalizada')
-    printarConteudoDir()
+    # printarConteudoDir(rootDir)
 
 
 if __name__ == '__main__':

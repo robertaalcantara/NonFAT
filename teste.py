@@ -8,7 +8,7 @@
 import os.path
 nome = 'abre'
 ext = '.txt'
-path = 'C:\\Users\\leona\\Documents'
+path = input()
 
 nomeCom = os.path.join(path, nome+ext)
 
