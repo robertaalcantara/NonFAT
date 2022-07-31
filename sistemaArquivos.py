@@ -69,6 +69,7 @@ def listagens(listaArquivos):
     #percorrer a lista de arquivos para saber se é um subdiretorio ou raiz
     PonteiroDiretorioPai = 0
     root = True
+    copiar = False
     for arquivo in listaArquivos:
         if(arquivo[0] == '..      '):
             root = False
@@ -120,8 +121,7 @@ def listagens(listaArquivos):
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
-        copiar = False
-        Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai, copiar)
+        Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai, copiar, NomeArq=0)
         alterar_info(PonteiroDiretorioPai)
         fechar(listaArquivos)
 
@@ -130,7 +130,7 @@ def listagens(listaArquivos):
         formatar()
     #adicionar diretorio no sistema de arquivos
     elif(opcaoEscolhida == 4):
-         Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai)
+         Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai,copiar,NomeArq=0)
          alterar_info(PonteiroDiretorioPai)
          fechar(listaArquivos)
 
