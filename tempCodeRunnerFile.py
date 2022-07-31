@@ -1,1 +1,1 @@
-    f.write('aaaaaaabbbbbbbbbbbbaaaaaaa')
+alterar_info

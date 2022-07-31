@@ -3,7 +3,7 @@ from numpy import ceil
 import os.path
 import Inserir
 
-operacoes = ['Abrir', 'Exportar', 'Adicionar arquivo', 'Formatar', 'Novo diretório', 'Sair']
+operacoes = ['Abrir', 'Exportar', 'Adicionar arquivo', 'Formatar', 'Novo diretório','Copiar arquivo' ,'Sair']
 
 def inicio():
     global bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, arq, totalSetores, dados, rootDir
@@ -120,7 +120,8 @@ def listagens(listaArquivos):
 
     #adicionar arquivo no sistema de arquivos
     elif(opcaoEscolhida == 2):
-        Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai)
+        copiar = False
+        Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai, copiar)
         alterar_info(PonteiroDiretorioPai)
         fechar(listaArquivos)
 
@@ -132,7 +133,11 @@ def listagens(listaArquivos):
          Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 2, PonteiroDiretorioPai)
          alterar_info(PonteiroDiretorioPai)
          fechar(listaArquivos)
-    elif(opcaoEscolhida == 5):
+
+    elif (opcaoEscolhida == 5):
+        copia(listaArquivos, PonteiroDiretorioPai)
+
+    elif(opcaoEscolhida == 6):
         arq.close()
         exit()
     else:
@@ -256,6 +261,27 @@ def formatar():
     print('Formatação finalizada')
     # printarConteudoDir(rootDir)
 
+def copia(listaArquivos, PonteiroDiretorioPai):
+    printarLista(listaArquivos)
+    copiar = True
+    num = int(input('Digite o numero do arquivo que deseja copiar: '))
+
+    escolhido = listaArquivos[num]
+
+    if escolhido[2] != 'arquivo':
+        print('Selecione um arquivo')
+        copia(listaArquivos)
+    ext = escolhido[1]
+    setorInicio = escolhido[4] * setoresPorCluster
+    conteudoByte = dados[setorInicio*bytesPorSetor:(setorInicio+(escolhido[5]*setoresPorCluster))*bytesPorSetor]
+    NomeCopia=input('Nome do arquivo: ')
+    NomeArq = NomeCopia + '.'+ ext
+    with open(NomeArq,"wb") as f:
+        f.write(conteudoByte)
+
+
+    Inserir.inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, 1, PonteiroDiretorioPai, copiar, NomeArq)
+    alterar_info(PonteiroDiretorioPai)
 
 if __name__ == '__main__':
     print("\n-----Sistema de Arquivos NonFAT-----\n")

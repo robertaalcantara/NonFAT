@@ -2,10 +2,11 @@ from pathlib import Path
 from math import ceil
 import os
 
-def info_arquivo():
-
-    caminho_arquivo = input("Insira o caminho do arquivo: \n")
-
+def info_arquivo(copia, NomeArq):
+    if not copia:
+        caminho_arquivo = input("Insira o caminho do arquivo: \n")
+    else:
+        caminho_arquivo = NomeArq
     with open(caminho_arquivo, 'rb') as leitura_arquivo:
          conteudo_arquivo = leitura_arquivo.read(-1)
          leitura_arquivo.close()
@@ -18,7 +19,7 @@ def info_arquivo():
 
     return(tamanho_arquivo, nome_arquivo, extensao_arquivo, conteudo_arquivo)    
 
-def inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, tipo, ponteiro_diretorio_pai):
+def inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetoresRootDir, tipo, ponteiro_diretorio_pai, copia, NomeArq):
 
     cluster_livre = True
     bytes_cluster = bytesPorSetor*setoresPorCluster
@@ -26,7 +27,7 @@ def inserir(arq, bytesPorSetor, setoresPorCluster, setoresBootRecord, numSetores
 
     if(tipo == 1):
         arquivo = []
-        arquivo = info_arquivo()
+        arquivo = info_arquivo(copia, NomeArq)
         qtd_clusters = ceil(arquivo[0]/bytes_cluster)
     else:
         nome_diretorio = input("Insira o nome do diretório: \n")
